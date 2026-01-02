@@ -37,29 +37,18 @@ class MSRVResult:
 class MSRVPublicEngine:
     def __init__(self, samples_path: str = None):
         if samples_path is None:
-            samples_path = os.path.join(os.path.dirname(__file__), "public_samples.json")
+            samples_path = os.path.join(os.path.dirname(__file__), "public_samples")
         self.samples_path = samples_path
         self.samples: List[Dict[str, Any]] = []
 
         if os.path.exists(samples_path):
             with open(samples_path, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-
-            # --- FIX: accept dict | list[dict] | nested list and flatten safely ---
             self.samples = self._normalize_samples(raw)
 
-    # ---------------------------
-    # normalization helpers
-    # ---------------------------
     def _normalize_samples(self, raw: Any) -> List[Dict[str, Any]]:
         """
         Normalize loaded samples into a flat list[dict].
-
-        Accepts:
-          - dict                  -> [dict]
-          - list[dict]            -> list[dict]
-          - list[list[dict]]      -> flattened list[dict]
-          - mixed/nested lists    -> flattened, dict-only
         """
         flat: List[Dict[str, Any]] = []
 
@@ -71,12 +60,9 @@ class MSRVPublicEngine:
                 for y in x:
                     walk(y)
                 return
-            # ignore anything else (str/int/etc.)
-            return
 
         walk(raw)
 
-        # Optional: drop entries missing required keys to avoid downstream issues
         cleaned: List[Dict[str, Any]] = []
         for s in flat:
             if "text" not in s:
@@ -101,7 +87,7 @@ class MSRVPublicEngine:
                 text, lang,
                 route="BYPASS", state4="Harmony", zs=0.95,
                 theta=0.0, shape="POINT", need=0.0,
-                notes="Empty input → BYPASS"
+                notes="Empty input -> BYPASS"
             )
 
         # exact match
